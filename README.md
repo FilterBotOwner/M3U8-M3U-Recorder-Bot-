@@ -132,8 +132,11 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 #### `/search <query>`
 - 💡 **Usage:**
 • `/search "Disney"` (searches all lists)
+
 • `/search "Disney India" .l1` (searches list 1)
+
 • `/search "Disney SD" .l1 .l3` (searches lists 1 and 3)
+
 - Behavior: Searches across channel lists for channels matching the query based on the specified filters.
 
 #### `/verify`
