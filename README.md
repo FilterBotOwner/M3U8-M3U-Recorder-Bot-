@@ -179,7 +179,7 @@ There are multiple **modes** supported conceptually — the bot may allow one or
 Upload The JSON FILE Containing m3u8 list to telegram `WORKING_GROUP` or `BOT's DM`, reply to the .json file with /add_m3u8.
 
 2. **Individual Link Mode**: 
-/add_m3u8 `"json name"` `"url"` `"channel name"` `"group"` 
+`/add_m3u8 "json name" "url" "channel name" "group"`
 Automatically Creates JSON FIle With Given Details
 
 
