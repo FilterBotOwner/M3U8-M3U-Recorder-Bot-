@@ -103,28 +103,40 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 
 <a name="commands-user--admin--detailed"></a>
 ## 💬 Commands — Full Reference, parameters, examples & behavior
-<details>
-<summary>Commands</summary>
 
 This section contains **detailed** behavior for each user and admin command. It explains optional parameters like `.L#`, `<task_id>`, `[m3u8|log|premium|admin]`, and duration formats.
 
 > **Quick reminder:** When passing arguments that contain spaces (like channel names), wrap them in quotes: `"Channel Name"`.
 
-### 👤 User Commands 
+### 👤 User Commands (detailed)
 
-#### `/start`
+<details>
+<summary>📝 /start</summary>
+
 - **Usage:** `/start` or `/start verify_<token>`
 - **Behavior:** Sends welcome message, shows quick help, and handles deeplink verification if `verify_` token is present.
 
-#### `/help`
+</details>
+
+<details>
+<summary>❓ /help</summary>
+
 - **Usage:** `/help`
 - **Behavior:** Shows list of user commands and examples. Admins will see additional admin commands.
 
-#### `/status`
+</details>
+
+<details>
+<summary>📊 /status</summary>
+
 - **Usage:** `/status`
 - **Behavior:** Shows current tier (Owner/Admin/Premium/Verified/Default), limits (max duration, parallel tasks) and premium expiry if applicable.
 
-#### `/rec "[URL/Channel]" [HH:MM:SS] [Optional Filename] [.L#]`
+</details>
+
+<details>
+<summary>🎥 /rec "[URL/Channel]" [HH:MM:SS] [Optional Filename] [.L#]</summary>
+
 - **Usage examples:**
   - `/rec "https://example.com/stream.m3u8" 00:10:00 "My Clip"`
   - `/rec "Disney Channel (4K)" 00:30:00 "Kids" .L1`
@@ -135,48 +147,79 @@ This section contains **detailed** behavior for each user and admin command. It 
   - `[.L#]` — Optional list selector. The bot sorts JSON list filenames alphabetically; `.L1` selects the first list, `.L2` the second, etc.
 - **Behavior:** If channel name is provided, bot searches the chosen lists for a matching key; if a URL is given, it uses it directly. The bot may prompt to select video/audio tracks and then queues the job. A `task_id` is returned.
 
-#### `/mytasks`
+</details>
+
+<details>
+<summary>📋 /mytasks</summary>
+
 - **Usage:** `/mytasks`
 - **Behavior:** Shows your active and queued tasks (with short `task_id` and status). Inline buttons provide 'Cancel' actions.
 
-#### `/cancel <task_id>`
+</details>
+
+<details>
+<summary>❌ /cancel <task_id></summary>
+
 - **Usage:** `/cancel` or `/cancel <task_id>`
 - **Behavior:** If no `task_id` is provided, the bot lists your active tasks with cancel buttons. If `task_id` is provided and you own the job (or are admin), it cancels the job.
   - For queued jobs: removed from queue.
   - For running jobs: sends signal to `ffmpeg` to stop and attempts to remove temporary files.
 
-#### `/channel`
+</details>
+
+<details>
+<summary>📺 /channel</summary>
+
 - **Usage:** `/channel`
 - **Behavior:** Interactive browsing of loaded JSON lists and channels. Select a channel to quickly call `/rec` with it.
 
-#### `/search <query>`
+</details>
+
+<details>
+<summary>🔍 /search <query></summary>
+
 - **💡 Usage:**
   - `/search "Disney"` — searches **all** loaded lists for `Disney`.
   - `/search "Disney India" .l1` — searches **list 1** only.
   - `/search "Disney SD" .l1 .l3` — searches **lists 1 and 3**.
 - **Behavior:** Returns a paginated list of matching channels (name, group, short url) and inline buttons to record or view details.
 
-#### `/verify`
+</details>
+
+<details>
+<summary>✅ /verify</summary>
+
 - **Usage:** `/verify`
 - **Behavior:** If `ENABLE_SHORTLINK` is true, bot generates a verification link (optionally shortened using `SHORTLINK_URL`). When the link is opened and verified by the service, the user is marked verified for `VERIFICATION_EXPIRY_SECONDS`.
 
+</details>
 
-### 👑 Admin Commands
+### 👑 Admin Commands (detailed)
 
 > Admin commands are restricted to admin users saved in DB or to the `OWNER_ID`.
 
-#### `/auth <duration>` — Grant Premium
+<details>
+<summary>👑 /auth <duration> — Grant Premium</summary>
+
 - **Recommended call pattern:** Reply to a user's message with `/auth 30d`.
 - **Alternative:** `/auth <user_id> 30d` (some bot builds support this form).
 - **`<duration>` formats:** `Nd` (days) or `Nh` (hours). Examples: `30d`, `7d`, `48h`, `12h`.
 - **Effect:** Adds or updates an entry in `premium_users` collection with expiry epoch timestamp. Sends DM notification to the user.
 - **Example:** Reply to @someuser's msg: `/auth 30d`.
 
-#### `/deauth` — Revoke Premium
+</details>
+
+<details>
+<summary>🚫 /deauth — Revoke Premium</summary>
+
 - **Usage:** Reply to a user's message with `/deauth` or `/deauth <user_id>`.
 - **Effect:** Removes user from `premium_users` or marks `is_premium=false`. Attempts to notify the user.
 
-#### `/add_m3u8` — Add Channel Lists
+</details>
+
+<details>
+<summary>📁 /add_m3u8 — Add Channel Lists</summary>
+
 There are multiple modes the bot supports (depending on code):
 
 **💡 Usage:**
@@ -185,9 +228,7 @@ There are multiple modes the bot supports (depending on code):
    - If validation passes, the bot saves the JSON into `M3U8_FILES_DIRECTORY` and reloads lists.
 
 2. **Inline / Individual Link Mode** — Admin can add a single channel entry inline via:
-```
-/add_m3u8 "json_name.json" "https://example.com/stream.m3u8" "Channel Name" "Group Name"
-```
+    `/add_m3u8 "json_name.json" "https://example.com/stream.m3u8" "Channel Name" "Group Name"`
    - The bot will create or update `json_name.json` with the new channel entry (slugified key) and save it.
 
 3. **Direct Deployment** — As an alternative, admin can manually place JSON files into the `M3U8_FILES_DIRECTORY` (for example via SFTP/SSH), then use `/admin_panel` or restart bot to load the lists.
@@ -196,11 +237,19 @@ There are multiple modes the bot supports (depending on code):
 - Filenames are used as list identifiers and determine `.L#` ordering (alphabetical by filename).
 - Uploaded JSON must be valid UTF-8 and follow the expected structure.
 
-#### `/remove_m3u8 "json_name"`
+</details>
+
+<details>
+<summary>🗑️ /remove_m3u8 "json_name"</summary>
+
 - **Usage:** `/remove_m3u8 "channels_list.json"` or reply to a file and run `/remove_m3u8`.
 - **Behavior:** Removes the JSON file from `M3U8_FILES_DIRECTORY` and reloads the lists.
 
-#### `/pull [m3u8|log|premium|admin]`
+</details>
+
+<details>
+<summary>📤 /pull [m3u8|log|premium|admin]</summary>
+
 - **Usage examples:**
   - `/pull m3u8` — returns a ZIP containing all JSON channel lists.
   - `/pull log <task_id>` — returns the FFmpeg log file(s) for specified task.
@@ -208,19 +257,32 @@ There are multiple modes the bot supports (depending on code):
   - `/pull admin` — returns JSON list of admin users.
 - **Purpose:** Backup or inspect stored bot data.
 
-#### `/flog [file|msg] <task_id>`
+</details>
+
+<details>
+<summary>📄 /flog [file|msg] <task_id></summary>
+
 - **Usage:**
   - `/flog file <task_id>` — send the full log file from `flogs/` if available.
   - `/flog msg <task_id>` — show last ~50 lines of the log in message form (avoids large file uploads).
 - **Notes:** Logs are rotated; older logs may be archived or deleted depending on configuration.
 
-#### `/tasks`
+</details>
+
+<details>
+<summary>📊 /tasks</summary>
+
 - **Usage:** `/tasks`
 - **Behavior:** Returns a paginated list of all active and queued tasks across the bot (admins only). Buttons allow page navigation and quick actions (cancel task, view logs).
 
-#### `/admin_panel`
+</details>
+
+<details>
+<summary>⚙️ /admin_panel</summary>
+
 - **Usage:** `/admin_panel`
 - **Behavior:** Opens an inline control panel for admins — reload lists, quick `/pull`, list premium users, manage workers.
+
 </details>
 
 ---
