@@ -36,7 +36,7 @@ A **Telegram Bot** to record M3U8 streams, manage recordings, and deliver them d
 - Manage channel lists (`/add_m3u8`, `/remove_m3u8`)
 - Export bot data with `/pull`
 - Monitor and paginate all tasks (`/tasks`)
-- View FFmpeg logs with `/flog`
+- View FFmpeg logs for each recording with `/flog TASK_ID`
 - Interactive **Admin Panel** with `/admin_panel`
 </details>
 
@@ -56,10 +56,10 @@ A **Telegram Bot** to record M3U8 streams, manage recordings, and deliver them d
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `API_ID` | Telegram API ID (from [my.telegram.org](https://my.telegram.org)) | `26378339` |
+| `API_ID` | Telegram API ID (from [my.telegram.org](https://my.telegram.org)) | `12345678` |
 | `API_HASH` | Telegram API Hash | `xxxx` |
 | `BOT_TOKEN` | Token from [BotFather](https://t.me/BotFather) | `xxxx:xxxx` |
-| `OWNER_ID` | Telegram ID of bot owner (full permissions) | `7958067256` |
+| `OWNER_ID` | Telegram ID of bot owner (full permissions) | `1234567890` |
 | `MONGO_URI` | MongoDB connection string for storing users/admins/premium data | `mongodb+srv://...` |
 | `M3U8_FILES_DIRECTORY` | Directory where converted JSON channel lists are stored | `./m3u8_channels` |
 | `WORKING_GROUP` | Group ID where bot posts verification & notifications | `-100xxxx` |
@@ -76,8 +76,8 @@ A **Telegram Bot** to record M3U8 streams, manage recordings, and deliver them d
 | `VERIFICATION_EXPIRY_SECONDS` | How long verification remains valid | `4h` |
 | `SHORTLINK_URL` | Shortlink provider base URL | `https://vplink.in` |
 | `SHORTLINK_API` | API key for shortlink provider | `xxxxxxxx` |
-| `STATUS_PAGE_SIZE` | Number of tasks per page in `/tasks` | `5` |
-| `PROGRESS_UPDATE_INTERVAL` | Seconds between progress updates | `10` |
+| `STATUS_PAGE_SIZE` | Number of tasks per page in `/tasks` | `10` |
+| `PROGRESS_UPDATE_INTERVAL` | Seconds between progress updates | `60` |
 
 ---
 
@@ -110,10 +110,10 @@ A **Telegram Bot** to record M3U8 streams, manage recordings, and deliver them d
 | `/deauth <user_id>` | Revoke premium access 🗑️ |
 | `/add_m3u8` | Upload and add new M3U8 JSON list ➕ |
 | `/remove_m3u8 "json_name"` | Remove an M3U8 channel list ➖ |
-| `/pull [m3u8|log|premium|admin]` | Export stored bot data 📥 |
+| `/pull [m3u8\log\premium\admin]` | Export stored bot data 📥 |
 | `/add_admin <user_id>` | Promote user to Admin 👑 |
 | `/remove_admin <user_id>` | Demote/remove Admin ⚔️ |
-| `/flog [file|msg] <task_id>` | Fetch FFmpeg logs for a task 📄 |
+| `/flog [file\msg] <task_id>` | Fetch FFmpeg logs for a task 📄 |
 | `/admin_panel` | Interactive inline admin control panel ⚙️ |
 
 ---
