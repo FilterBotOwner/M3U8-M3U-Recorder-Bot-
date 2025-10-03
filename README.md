@@ -221,9 +221,9 @@ There are multiple modes the bot supports (depending on code):
 #### `/admin_panel`
 - **Usage:** `/admin_panel`
 - **Behavior:** Opens an inline control panel for admins — reload lists, quick `/pull`, list premium users, manage workers.
-
----
 </details>
+---
+
 <a name="m3u---json-converter-in-repo"></a>
 ## 🗂️ M3U → JSON Converter (in repo)
 
