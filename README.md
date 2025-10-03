@@ -321,7 +321,9 @@ python "M3U To Json.py"
 
 <a name="deployment-full-details"></a>
 ## 🖥️ Deployment (full details)
-
+<details>
+<summary>Deployment Guidelines</summary>
+  
 > This section contains step-by-step dropdowns for each common deployment flow: cloning from Git, manual setup, Ubuntu production with `systemd`, and Windows. Each step is explicit and contains commands to run.
 
 <details>
@@ -523,11 +525,14 @@ python main.py
 - If running on a shared desktop, ensure you have sufficient bandwidth and disk space for temporary files.
 
 </details>
+</details>
 
 ---
 
 <a name="troubleshooting--faq"></a>
 ## ❗ Troubleshooting & FAQ
+<details>
+<summary>Troubleshooting</summary>
 
 <details>
 <summary>FFmpeg not found</summary>
@@ -594,26 +599,33 @@ python main.py
 - Add health checks and periodic cleanup if tasks frequently become stale.
 
 </details>
+</details>
 
 ---
 
 <a name="security--notes"></a>
 ## 🔐 Security & Notes
-
+<details>
+<summary>Security</summary>
+  
 - **Do not commit secrets** (`BOT_TOKEN`, `API_HASH`, `MONGO_URI`) into git. Use environment variables or a protected `.env` file stored outside the repo.
 - Limit `NUM_WORKERS` based on actual hardware capabilities to avoid resource exhaustion.
 - Always keep `ffmpeg` updated to the latest stable build for best compatibility.
 - If exposing MongoDB to public networks temporarily (e.g. `0.0.0.0/0`), ensure credentials are strong and prefer restricting IP ranges.
+</details>
 
 ---
 
 <a name="credits"></a>
 ## 🙌 Credits
-
+<details>
+<summary>Credits</summary>
+  
 - Built using **Pyrogram** for Telegram interaction.
 - Stream recording powered by **FFmpeg** and **ffprobe**.
 - Data persistence via **MongoDB**.
 - `M3U To Json.py` is a small utility included in the repo for converting `.m3u` playlists into bot-friendly JSON lists.
+</details>
 
 ---
 
