@@ -6,353 +6,354 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 
 ## 🔎 Table of Contents
 
-1. Features
-2. Configuration (`config.py`) — full breakdown
-3. Commands (User + Admin) — detailed explanations & examples
-4. M3U → JSON Converter — how it works + headless example
-5. Deployment — Windows & Ubuntu + .env example
-6. Troubleshooting & FAQ
-7. Security & Notes
-8. Credits
+1. [Features](#features)
+2. [Configuration (`config.py`)](#configuration-configpy--full-breakdown)
+3. [Commands (User + Admin)](#commands-user--admin--detailed)
+4. [M3U → JSON Converter](#m3u---json-converter-in-repo)
+5. [Deployment](#deployment-full-details)
+6. [Troubleshooting & FAQ](#troubleshooting--faq)
+7. [Security & Notes](#security--notes)
+8. [Credits](#credits)
 
 ---
 
+<a name="features"></a>
 ## 🚀 Features (Expanded)
 
 <details>
 <summary>🎥 Recording Features (expanded)</summary>
 
 - Record from **M3U8** URLs or from a **predefined channel list (JSON)** stored in `M3U8_FILES_DIRECTORY`.
+- Support for both direct `m3u8` stream URLs and HLS playlists.
 - On setup, choose **video track** and then one or more **audio tracks** to include in the final file.
-- Live **progress updates**: percentage, ETA, and cancel button.
-- **Splits** files larger than the configured max (keeps parts under Telegram limit — ~2GB).
-- Generates a thumbnail and uses `ffprobe` + fallback (hachoir) to compute duration.
-- Robust `ffmpeg` invocation: supports adding HTTP headers (Referer/User-Agent) if needed.
+- Live **progress updates**: percentage, ETA, file size, and cancel button.
+- **Splits** files larger than the configured max (keeps parts under Telegram's upload limit — ~2GB per file). The bot names parts with `_part1`, `_part2`, etc.
+- Generates a thumbnail for the recorded file and writes basic metadata (duration, resolution).
+- Uses `ffprobe` for stream inspection; falls back to parsing if `ffprobe` fails.
+- Robust `ffmpeg` invocation: supports supplying HTTP headers such as Referer and User-Agent when required by certain streams.
+- Graceful cancellation: if a user cancels a running recording, `ffmpeg` is signalled to stop, partial files cleaned up (or optionally kept if configured).
+
 </details>
 
 <details>
 <summary>👤 User Features</summary>
 
-- Tiered access:
-  - **Default** users — limited duration & parallel tasks.
-  - **Verified** users — via shortlink verification (if enabled).
-  - **Premium** — granted by admin with expiry.
+- Tiered access control:
+  - **Default** users — limited recording duration & parallel tasks.
+  - **Verified** users — verified via shortlink provider and get medium limits.
+  - **Premium** users — higher limits & longer recording durations granted by admins.
 - Commands for interacting with the bot: `/rec`, `/mytasks`, `/cancel`, `/status`, `/verify`, `/search`, `/channel`.
+- Interactive prompts for selecting audio/video streams when necessary.
+- Progress messages with inline buttons to cancel or open file links when uploaded.
+
 </details>
 
 <details>
 <summary>🛠 Admin Features (expanded)</summary>
 
 - Grant/revoke premium access (short-lived) with `/auth` and `/deauth`.
-- Add or remove **admin** accounts which can use special commands.
-- Add new channel lists (JSON) and remove them, either by uploading JSON or via inline modes (see below).
-- Export data (tasks, logs, premium list, admin list) via `/pull`.
-- View FFmpeg logs and last messages with `/flog`.
-- Use `/tasks` to get a paginated, interactive view of all active tasks, and cancel if necessary.
+- Add or remove **admin** accounts which can execute restricted commands.
+- Add channel lists (JSON) and remove them; supports file upload (reply to `.json` file) and inline add mode.
+- Export bot data (channel lists, premium users, admin users, log files) via `/pull`.
+- Inspect FFmpeg logs per task with `/flog`.
+- Paginated admin view of all active tasks with `/tasks` and administrative controls (force-cancel, restart, requeue).
+- Admin interactive panel with `/admin_panel` for quick maintenance.
+
 </details>
 
 ---
 
+<a name="configuration-configpy--full-breakdown"></a>
 ## 📋 Configuration (`config.py`) — full breakdown
 
-> **Tip:** Prefer environment variables in production. `config.py` reads environment variables by default — see the example `.env` later.
+> **Tip:** Use environment variables in production. `config.py` loads from the environment when values are present.
 
 | Variable | Type | Purpose / Where used | Example |
 |---|---:|---|---|
-| `API_ID` | int | Telegram API ID — required by Pyrogram to create Client. | `12345678` |
-| `API_HASH` | str | Telegram API Hash — used with API_ID. | `abcd1234efgh5678` |
+| `API_ID` | int | Telegram API ID — required by Pyrogram to create a client. | `12345678` |
+| `API_HASH` | str | Telegram API Hash — paired with API_ID for authentication. | `abcd1234efgh5678` |
 | `BOT_TOKEN` | str | Bot token from BotFather used to run the bot. | `1234:ABCdefGHIjkl` |
-| `OWNER_ID` | int | Owner user ID — special permissions, owner-only commands. | `987654321` |
-| `MONGO_URI` | str | MongoDB connection string — used for storing premium users, verification tokens, admins. | `mongodb+srv://user:pw@cluster...` |
-| `M3U8_FILES_DIRECTORY` | str | Directory where JSON channel lists live. Bot loads all `*.json` from here. | `./m3u8_channels` |
-| `WORKING_GROUP` | int | Primary group id where bot posts verification and some notifications. | `-1001234567890` |
-| `TIMEZONE` | str | Timezone used to format timestamps in `/status` etc. | `Asia/Kolkata` |
-| `GROUP_LINK` | str | Invite link used in messages to point users to the official group. | `https://t.me/yourgroup` |
-| `NUM_WORKERS` | int | Number of async worker tasks for recordings on *this instance*. | `4` |
-| `GLOBAL_MAX_PARALLEL_TASKS` | int | Absolute cap of parallel recordings across all users. Useful to protect CPU / bandwidth. | `10` |
+| `OWNER_ID` | int | Owner user ID — always has full permissions & bypasses some checks. | `987654321` |
+| `MONGO_URI` | str | MongoDB connection string — used for storing premium users, verification tokens, admins and task metadata. | `mongodb+srv://user:pw@cluster...` |
+| `M3U8_FILES_DIRECTORY` | str | Directory where JSON channel lists live. Bot loads all `*.json` files from here on startup and on reload. | `./m3u8_channels` |
+| `WORKING_GROUP` | int | Primary group id used for verification messages or admin posts. | `-1001234567890` |
+| `TIMEZONE` | str | Timezone used to format timestamps in responses like `/status`. | `Asia/Kolkata` |
+| `GROUP_LINK` | str | Invite link used in messages to point users to the official support group. | `https://t.me/yourgroup` |
+| `NUM_WORKERS` | int | Number of concurrent recording workers (per bot instance). Increase on high-resource machines. | `4` |
+| `GLOBAL_MAX_PARALLEL_TASKS` | int | Absolute cap of parallel recordings across all users to protect CPU/bandwidth. | `10` |
 | `FFPROBE_TIMEOUT` | int | Timeout (seconds) for probing streams with `ffprobe`. | `30` |
-| `PREMIUM_MAX_DURATION_SEC` | int | Maximum duration (seconds) allowed per recording for premium users (stored in seconds). Example: `2*3600` for 2 hours. | `7200` |
-| `PREMIUM_PARALLEL_TASKS` | int | Max parallel tasks allowed per premium user. | `2` |
-| `VERIFIED_MAX_DURATION_SEC` | int | Max duration for verified users (seconds). | `2700` (45m) |
-| `VERIFIED_PARALLEL_TASKS` | int | Max parallel tasks for verified users. | `2` |
-| `ENABLE_SHORTLINK` | bool | Toggle shortlink verification on/off. If `false` `/verify` will be disabled. | `true` |
-| `VERIFICATION_EXPIRY_SECONDS` | int | How long verification remains valid (seconds). | `4*3600` |
-| `SHORTLINK_URL` | str | Shortlink service base URL used to create verification links. Optional. | `https://vplink.in` |
-| `SHORTLINK_API` | str | API key for shortlink service. Optional. | `xxx-yyy-zzz` |
+| `PREMIUM_MAX_DURATION_SEC` | int | Maximum recording duration (seconds) allowed for premium users. Example: `7200` (2 hours). | `7200` |
+| `PREMIUM_PARALLEL_TASKS` | int | Max parallel recordings allowed per premium user. | `2` |
+| `VERIFIED_MAX_DURATION_SEC` | int | Max duration for verified users (seconds). | `2700` |
+| `VERIFIED_PARALLEL_TASKS` | int | Max parallel recordings for verified users. | `2` |
+| `ENABLE_SHORTLINK` | bool | Toggle shortlink verification on/off. If `false`, `/verify` is disabled. | `true` |
+| `VERIFICATION_EXPIRY_SECONDS` | int | How long verification remains valid (seconds). | `14400` |
+| `SHORTLINK_URL` | str | Shortlink provider base URL used to create verification links (optional). | `https://vplink.in` |
+| `SHORTLINK_API` | str | API key for shortlink service (optional). | `xxx-yyy-zzz` |
 | `STATUS_PAGE_SIZE` | int | How many tasks to show per page for `/tasks` pagination. | `10` |
-| `PROGRESS_UPDATE_INTERVAL` | int | Interval (seconds) between progress message edits to reduce API spam. | `60` |
+| `PROGRESS_UPDATE_INTERVAL` | int | Interval (seconds) between progress message edits to reduce Telegram API calls. | `60` |
 
-**Note on durations:** The values like `PREMIUM_MAX_DURATION_SEC` are seconds in `config.py`. Human examples given above are for readability. When using `/auth` you may pass `30d` or `48h` — see command docs below.
+**Note on durations and `config.py` values**
+- Numeric durations in `config.py` are stored as seconds. Admin commands like `/auth` accept human-friendly durations such as `30d`, `48h` or `12h` and the bot converts those to seconds.
+- Keep `NUM_WORKERS` aligned with your server CPU, disk I/O and network bandwidth. Too many workers can saturate the machine and cause failed recordings.
 
 ---
 
+<a name="commands-user--admin--detailed"></a>
 ## 💬 Commands — Full Reference, parameters, examples & behavior
 
-> The following expands the short command list and explains parameters like `.L#`, `<task_id>`, `[m3u8|log|premium|admin]`, duration formats, and how commands are meant to be used.
+This section contains **detailed** behavior for each user and admin command. It explains optional parameters like `.L#`, `<task_id>`, `[m3u8|log|premium|admin]`, and duration formats.
+
+> **Quick reminder:** When passing arguments that contain spaces (like channel names), wrap them in quotes: `"Channel Name"`.
 
 ### 👤 User Commands (detailed)
 
 #### `/start`
-- Usage: `/start` or `/start verify_<token>` (used by deeplink verification).
-- Behavior: Show welcome message and handle deeplink verification payloads.
+- **Usage:** `/start` or `/start verify_<token>`
+- **Behavior:** Sends welcome message, shows quick help, and handles deeplink verification if `verify_` token is present.
 
 #### `/help`
-- Usage: `/help`
-- Behavior: Shows available commands. Contents vary for normal users vs admins.
+- **Usage:** `/help`
+- **Behavior:** Shows list of user commands and examples. Admins will see additional admin commands.
 
 #### `/status`
-- Usage: `/status`
-- Behavior: Shows your tier (Owner/Admin/Premium/Verified/Default), limits and premium expiry (if any).
+- **Usage:** `/status`
+- **Behavior:** Shows current tier (Owner/Admin/Premium/Verified/Default), limits (max duration, parallel tasks) and premium expiry if applicable.
 
 #### `/rec "[URL/Channel]" [HH:MM:SS] [Optional Filename] [.L#]`
-- Usage examples:
-  - ` /rec "https://example.com/stream.m3u8" 00:10:00 "My Clip"`
+- **Usage examples:**
+  - `/rec "https://example.com/stream.m3u8" 00:10:00 "My Clip"`
   - `/rec "Disney Channel (4K)" 00:30:00 "Kids" .L1`
-- Parameter breakdown:
-  - `"[URL/Channel]"` — Either a direct M3U8 URL **or** the name/key of a channel contained in one of your `*.json` channel lists.
-  - `[HH:MM:SS]` — Duration. Accepts `HH:MM:SS` or `MM:SS` formats. You may also provide seconds (e.g., `600`).
-  - `[Optional Filename]` — Quoted filename for the output video (used when uploaded to Telegram).
-  - `[.L#]` — Optional list selector. If you have many JSON lists, the bot sorts them alphabetically and assigns indexes `.L1`, `.L2`, etc. Use `.L#` to pick which list to search for the channel name. Example: `.L1` selects the first JSON list in sorted order.
-- Behavior: Starts interactive setup if required (select video & audio tracks). After selection, job is queued and will run when a worker is available.
+- **Parameters:**
+  - `"[URL/Channel]"` — Either a direct M3U8 URL **or** the key/name of a channel contained in one of your `*.json` lists.
+  - `[HH:MM:SS]` — Duration. Accepts `HH:MM:SS` or `MM:SS` formats. Plain seconds (e.g., `600`) are also accepted.
+  - `[Optional Filename]` — Quoted filename used for the final Telegram-uploaded video.
+  - `[.L#]` — Optional list selector. The bot sorts JSON list filenames alphabetically; `.L1` selects the first list, `.L2` the second, etc.
+- **Behavior:** If channel name is provided, bot searches the chosen lists for a matching key; if a URL is given, it uses it directly. The bot may prompt to select video/audio tracks and then queues the job. A `task_id` is returned.
 
 #### `/mytasks`
-- Usage: `/mytasks`
-- Behavior: Shows your active / queued jobs (with links to progress messages when available).
+- **Usage:** `/mytasks`
+- **Behavior:** Shows your active and queued tasks (with short `task_id` and status). Inline buttons provide 'Cancel' actions.
 
 #### `/cancel <task_id>`
-- Usage: `/cancel`, `/cancel <task_id>`
-- Behavior: If no `task_id` is provided, the bot lists your active/queued tasks with inline buttons to cancel. If a `task_id` is provided, the bot attempts to cancel that job (if you're the owner or admin). Cancellation handles:
-  - **Queued jobs**: removed from queue.
-  - **Running jobs**: sends terminate to ffmpeg process, cleans up temp files.
+- **Usage:** `/cancel` or `/cancel <task_id>`
+- **Behavior:** If no `task_id` is provided, the bot lists your active tasks with cancel buttons. If `task_id` is provided and you own the job (or are admin), it cancels the job.
+  - For queued jobs: removed from queue.
+  - For running jobs: sends signal to `ffmpeg` to stop and attempts to remove temporary files.
 
 #### `/channel`
-- Usage: `/channel`
-- Behavior: Browse loaded JSON channel lists and pick a channel to use in `/rec`.
+- **Usage:** `/channel`
+- **Behavior:** Interactive browsing of loaded JSON lists and channels. Select a channel to quickly call `/rec` with it.
 
 #### `/search <query>`
-- 💡 **Usage:**
-
-    • `/search "Disney"` (searches all lists)
-
-    • `/search "Disney India" .l1` (searches list 1)
-
-    • `/search "Disney SD" .l1 .l3` (searches lists 1 and 3)
-
-- Behavior: Searches across channel lists for channels matching the query based on the specified filters.
+- **💡 Usage:**
+  - `/search "Disney"` — searches **all** loaded lists for `Disney`.
+  - `/search "Disney India" .l1` — searches **list 1** only.
+  - `/search "Disney SD" .l1 .l3` — searches **lists 1 and 3**.
+- **Behavior:** Returns a paginated list of matching channels (name, group, short url) and inline buttons to record or view details.
 
 #### `/verify`
-- Usage: `/verify`
-- Behavior: Send the user a verification link (optionally shortened by `SHORTLINK_URL`) which, when opened, verifies the user for a limited time set by `VERIFICATION_EXPIRY_SECONDS`.
+- **Usage:** `/verify`
+- **Behavior:** If `ENABLE_SHORTLINK` is true, bot generates a verification link (optionally shortened using `SHORTLINK_URL`). When the link is opened and verified by the service, the user is marked verified for `VERIFICATION_EXPIRY_SECONDS`.
 
 
 ### 👑 Admin Commands (detailed)
 
-**Important**: Most admin commands are restricted to admin users (stored in DB) or the OWNER_ID. Where noted, commands expect you to **reply** to a target user's message.
+> Admin commands are restricted to admin users saved in DB or to the `OWNER_ID`.
 
 #### `/auth <duration>` — Grant Premium
-- How to call (recommended): **Reply** to a user's message in chat with `/auth <duration>`.
-- Alternative: `<admin> /auth <user_id> <duration>` may work depending on the implementation, but reply is the safe method.
-- `<duration>` syntax:
-  - `30d` = 30 days
-  - `7d` = 7 days
-  - `48h` = 48 hours
-  - `12h` = 12 hours
-- What it does:
-  - Adds/updates a document in `premium_users` collection with:
-    - `_id`: user id
-    - `is_premium`: true
-    - `expires_at`: epoch seconds when premium expires
-    - `name` & `username` for convenience
-  - Notifies the target user that they have premium access (attempts to DM).
-  - `/status` will show the expiry date/time.
-- Example (reply mode): Reply to @someuser's message with: `/auth 30d`
+- **Recommended call pattern:** Reply to a user's message with `/auth 30d`.
+- **Alternative:** `/auth <user_id> 30d` (some bot builds support this form).
+- **`<duration>` formats:** `Nd` (days) or `Nh` (hours). Examples: `30d`, `7d`, `48h`, `12h`.
+- **Effect:** Adds or updates an entry in `premium_users` collection with expiry epoch timestamp. Sends DM notification to the user.
+- **Example:** Reply to @someuser's msg: `/auth 30d`.
 
 #### `/deauth` — Revoke Premium
-- How to call: Reply to user's message with `/deauth` OR use `/deauth <user_id>`.
-- What it does:
-  - Deletes the user's document from `premium_users` collection.
-  - Attempts to notify the user that premium access has been revoked.
-- Example: Reply to user's message with `/deauth`.
+- **Usage:** Reply to a user's message with `/deauth` or `/deauth <user_id>`.
+- **Effect:** Removes user from `premium_users` or marks `is_premium=false`. Attempts to notify the user.
 
 #### `/add_m3u8` — Add Channel Lists
-There are multiple **modes** supported conceptually — the bot may allow one or more of these depending on how it's configured.
+There are multiple modes the bot supports (depending on code):
 
-💡 Usage:
-***Inline Method***
-1. **File Mode**
-Upload The JSON FILE Containing m3u8 list to telegram `WORKING_GROUP` or `BOT's DM`, reply to the .json file with /add_m3u8.
+**💡 Usage:**
+1. **File Mode (recommended)** — Upload a `.json` file containing channel list to the bot (in its DM or to the configured `WORKING_GROUP`) and **reply to that file** with `/add_m3u8`.
+   - The bot validates the JSON (each key should map to `{ "name":..., "url":..., "Group":... }`).
+   - If validation passes, the bot saves the JSON into `M3U8_FILES_DIRECTORY` and reloads lists.
 
-2. **Individual Link Mode**: 
-`/add_m3u8 "json name" "url" "channel name" "group"`
-Automatically Creates JSON FIle With Given Details
+2. **Inline / Individual Link Mode** — Admin can add a single channel entry inline via:
+```
+/add_m3u8 "json_name.json" "https://example.com/stream.m3u8" "Channel Name" "Group Name"
+```
+   - The bot will create or update `json_name.json` with the new channel entry (slugified key) and save it.
 
+3. **Direct Deployment** — As an alternative, admin can manually place JSON files into the `M3U8_FILES_DIRECTORY` (for example via SFTP/SSH), then use `/admin_panel` or restart bot to load the lists.
 
-***Direct Method***
-Directly upload JSON Folder In The `M3U8_FILES_DIRECTORY`
-
-**Notes & behavior**:
-- After adding, the bot loads the file and the list appears in `channel` and `search` commands.
-- Filenames are used as list identifiers (and implicitly in the alphabetical sorted order used for `.L#` indexing).
+**Notes:**
+- Filenames are used as list identifiers and determine `.L#` ordering (alphabetical by filename).
+- Uploaded JSON must be valid UTF-8 and follow the expected structure.
 
 #### `/remove_m3u8 "json_name"`
-- Usage: `/remove_m3u8 "channels_list.json"` or reply to a list’s file/message and run `/remove_m3u8`.
-- Removes the JSON file from `M3U8_FILES_DIRECTORY` and reloads lists.
+- **Usage:** `/remove_m3u8 "channels_list.json"` or reply to a file and run `/remove_m3u8`.
+- **Behavior:** Removes the JSON file from `M3U8_FILES_DIRECTORY` and reloads the lists.
 
-#### `/pull [m3u8|log|premium|admin]` — Export Data
-- Usage examples:
-  - `/pull m3u8` → returns a ZIP or files of all JSON channel lists.
-  - `/pull log <task_id>` → returns the FFmpeg log file for `task_id` if available.
-  - `/pull premium` → returns a list (CSV/JSON) of premium users with expiry timestamps.
-  - `/pull admin` → returns the admin users list saved in DB.
-- Purpose: to backup or inspect data.
+#### `/pull [m3u8|log|premium|admin]`
+- **Usage examples:**
+  - `/pull m3u8` — returns a ZIP containing all JSON channel lists.
+  - `/pull log <task_id>` — returns the FFmpeg log file(s) for specified task.
+  - `/pull premium` — returns a CSV/JSON of premium users and expiry timestamps.
+  - `/pull admin` — returns JSON list of admin users.
+- **Purpose:** Backup or inspect stored bot data.
 
-#### `/flog [file|msg] <task_id>` — FFmpeg logs of specific Task ID
-- Usage:
-  - `/flog file <task_id>` → send full log file (if present in `flogs/`).
-  - `/flog msg <task_id>` → show last ~50 lines of the log in a message (avoids large messages).
-- Admin-only — helpful for debugging failed recordings.
+#### `/flog [file|msg] <task_id>`
+- **Usage:**
+  - `/flog file <task_id>` — send the full log file from `flogs/` if available.
+  - `/flog msg <task_id>` — show last ~50 lines of the log in message form (avoids large file uploads).
+- **Notes:** Logs are rotated; older logs may be archived or deleted depending on configuration.
 
-#### `/tasks` — View All Tasks
-- Shows a paginated view of *all active tasks* (not just your own). Buttons allow paging through lists. Each task shows status, filename, user and a link to the progress message when available.
-- The pagination buttons expire (typically after a short time) to avoid stale interactions.
+#### `/tasks`
+- **Usage:** `/tasks`
+- **Behavior:** Returns a paginated list of all active and queued tasks across the bot (admins only). Buttons allow page navigation and quick actions (cancel task, view logs).
 
 #### `/admin_panel`
-- Opens an interactive inline control panel — quick access to common admin actions (reload lists, show queued jobs, quick deauth, etc.).
-- Behavior & layout may vary by release, it’s an admin convenience UI that uses callback queries.
+- **Usage:** `/admin_panel`
+- **Behavior:** Opens an inline control panel for admins — reload lists, quick `/pull`, list premium users, manage workers.
 
 ---
 
-## 🔢 Command Parameter Cheat-Sheet
-
-- `.L#` — list selector: choose which JSON list to search when supplying a **channel name** instead of a direct URL. `.L1` = first JSON file in alphabetical order, `.L2` = second, etc.
-- `<task_id>` — unique job identifier returned by the bot when you create a recording. Usually long random hex; UI often shows first 8 characters as shorthand. Use full id to target a job for cancellation or pulling logs.
-- `[m3u8|log|premium|admin]` — options for `/pull` telling the bot which dataset to export.
-- `/rec "[URL/Channel]" [HH:MM:SS] [Optional Filename] [.L#]` — full format; quoting the first argument if it contains spaces is required.
-- `/auth <user_id> <duration>` — duration accepts `Nd` (days) or `Nh` (hours). The bot converts to seconds and stores expiry.
-
----
-
+<a name="m3u---json-converter-in-repo"></a>
 ## 🗂️ M3U → JSON Converter (in repo)
 
-File: `M3U To Json.py` — interactive converter using a small Tk file picker + command-line prompts.
+File included: `M3U To Json.py` — an **interactive GUI** helper that reads `.m3u`/`.m3u8` and outputs a `.json` formatted for the bot.
 
 ### What it does
-- Reads `.m3u` or `.m3u8` files.
-- Extracts lines with `#EXTINF:` to get names and `group-title` if present.
-- Matches the next HTTP line as the stream URL.
-- Prompts you for group descriptions and channel descriptions (when group not present).
-- Saves a JSON mapping of `slugified_key: { name, url, Group }` which the bot can load directly.
+- Reads standard M3U playlists and extracts `#EXTINF` lines and `group-title` attributes if present.
+- Maps each channel to a slugified key and produces JSON like:
+```json
+{
+  "dd_tv_hd": { "name": "DD TV HD", "url": "https://.../hd.m3u8", "Group": "News" }
+}
+```
+- Prompts the user for group descriptions for better organization.
 
-### How to run (GUI/interactive mode)
+### How to run (interactive GUI)
 ```bash
 python "M3U To Json.py"
 ```
-- Choose your `.m3u` file in the GUI picker. Choose output `.json`. Provide group descriptions when prompted.
-
-### Headless (non-GUI) quick example
-If you want a non-interactive converter (no prompts — useful for automation), you can use the short script below and adapt as needed.
-
-```python
-# m3u_to_json_headless.py (example)
-import re, json, sys, os
-
-def slugify(text):
-    text = text.lower()
-    text = re.sub(r"[^\w\s-]", "", text)
-    return re.sub(r"[\s-]+", "_", text).strip('_')
-
-def convert(in_path, out_path, default_group=None):
-    with open(in_path, 'r', encoding='utf-8') as f:
-        lines = [l.strip() for l in f if l.strip()]
-    channels = {}
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        if line.startswith('#EXTINF:'):
-            name_match = re.search(r',([^,]+)$', line)
-            name = name_match.group(1).strip() if name_match else 'Unknown'
-            group_match = re.search(r'group-title="([^"]*)"', line)
-            group = group_match.group(1) if group_match else (default_group or '')
-            # next line expected to be URL
-            url = lines[i+1] if i+1 < len(lines) and lines[i+1].lower().startswith('http') else ''
-            key = slugify(name)
-            # ensure unique
-            base = key; c = 1
-            while key in channels:
-                key = f"{base}_{c}"; c += 1
-            channels[key] = {"name": name, "url": url, "Group": group}
-            i += 2
-        else:
-            i += 1
-    with open(out_path, 'w', encoding='utf-8') as f:
-        json.dump(channels, f, indent=2, ensure_ascii=False)
-
-if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print('Usage: python m3u_to_json_headless.py input.m3u output.json [default_group]')
-        sys.exit(1)
-    convert(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
-```
-
-> Move the produced `output.json` to `M3U8_FILES_DIRECTORY` and restart the bot or use `/add_m3u8`.
+- A file picker opens to choose the `.m3u` file and then a save dialog for `.json`.
+- After conversion, move the `.json` into `M3U8_FILES_DIRECTORY` or add it via `/add_m3u8`.
 
 ---
 
+<a name="deployment-full-details"></a>
 ## 🖥️ Deployment (full details)
 
-> Two common flows: **Clone + run** or **Manual**. For production, run on Ubuntu server with a process manager (systemd, supervisord) and ensure `ffmpeg` is available.
+> This section contains step-by-step dropdowns for each common deployment flow: cloning from Git, manual setup, Ubuntu production with `systemd`, and Windows. Each step is explicit and contains commands to run.
 
-### Requirements & recommended packages
-- Python 3.9+
-- ffmpeg & ffprobe in PATH (`ffmpeg -version` should run)
-- MongoDB (Atlas or self-hosted)
-- pip packages (example `requirements.txt`):
-  - `pyrogram`, `pymongo`, `hachoir`, `pillow`, `aiofiles`, `httpx`, `python-dotenv`, `pytz`
+<details>
+<summary>🔹 Clone Repository (Recommended)</summary>
 
-Example `requirements.txt` (minimal):
-```
-pyrogram
-pymongo
-hachoir
-pillow
-aiofiles
-httpx
-python-dotenv
-pytz
+**When to use:** Quick start or development.
+
+**Steps:**
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/your/repo.git
+cd repo
 ```
 
-### Example `.env` (recommended — do NOT commit to git)
-```
-API_ID=12345678
-API_HASH=abcd1234efgh5678
-BOT_TOKEN=1234:ABCdefGHIjkl
-OWNER_ID=987654321
-MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname
-M3U8_FILES_DIRECTORY=./m3u8_channels
-WORKING_GROUP=-1001234567890
-TIMEZONE=Asia/Kolkata
-GROUP_LINK=https://t.me/yourgroup
-NUM_WORKERS=4
-GLOBAL_MAX_PARALLEL_TASKS=10
-ENABLE_SHORTLINK=true
-SHORTLINK_URL=https://vplink.in
-SHORTLINK_API=your_shortlink_api_key
-PROGRESS_UPDATE_INTERVAL=10
+2. **Create and activate a virtual environment (Linux/macOS)**
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-> Use `python-dotenv` or your process manager to load env variables. `config.py` already reads from the environment by default.
+**Windows (PowerShell)**
 
-### Deployment Steps (clone & run)
-1. `git clone https://github.com/your/repo.git`
-2. `cd repo`
-3. `python -m venv venv && source venv/bin/activate` or on Windows `venv\Scripts\activate`
-4. `pip install -r requirements.txt`
-5. Create your `.env` or edit `config.py` for a quick local test
-6. Place JSON channel lists in `M3U8_FILES_DIRECTORY`
-7. Run: `python main.py`
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1
+```
 
-### Production (Ubuntu) — example with systemd
-Create `/etc/systemd/system/m3u-recorder.service`:
+3. **Install Python dependencies**
+
+```bash
+pip install -r requirements.txt
+```
+
+4. **Prepare configuration**
+- Edit `config.py` to set `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_URI`, `M3U8_FILES_DIRECTORY`, and other values.
+- Or export environment variables before starting if you prefer not to edit files.
+
+5. **Add channel lists**
+- Copy your `*.json` channel files to `M3U8_FILES_DIRECTORY` (create the directory if it doesn't exist).
+
+6. **Start the bot**
+
+```bash
+python main.py
+```
+
+7. **Verify**
+- In Telegram, message your bot `/start` and ensure it replies. Check logs for errors.
+
+**Notes:**
+- Keep the terminal open or use a process manager (see Ubuntu / systemd or Windows service suggestions below).
+
+</details>
+
+<details>
+<summary>🔹 Manual Setup</summary>
+
+**When to use:** You downloaded a ZIP or want to manually install on a desktop.
+
+**Steps:**
+
+1. **Download and extract** the repository ZIP file.
+2. Open a terminal in the extracted folder.
+3. **Create & activate a virtualenv** (see Clone steps above).
+4. **Install dependencies**: `pip install -r requirements.txt`.
+5. **Configure** the bot by editing `config.py` (set tokens and DB URI).
+6. **Place JSON lists** into `M3U8_FILES_DIRECTORY`.
+7. **Run:** `python main.py`.
+
+**Tips:**
+- Keep a copy of your `config.py` in a safe place; avoid committing it to git.
+- For repeated runs, use a shortcut script (Bash or PowerShell) to start the bot with the environment activated.
+
+</details>
+
+<details>
+<summary>🔹 Ubuntu Deployment with systemd (Production)</summary>
+
+**When to use:** Running the bot 24/7 on a VPS or cloud instance.
+
+**Steps:**
+
+1. **Prepare server**
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install python3 python3-venv python3-pip ffmpeg -y
+```
+
+2. **Clone & setup**
+
+```bash
+git clone https://github.com/your/repo.git
+cd repo
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+```
+
+3. **Create `.env` or edit `config.py`**
+- Place your `API_ID`, `API_HASH`, `BOT_TOKEN`, and `MONGO_URI` in an environment file such as `/home/ubuntu/m3u-recorder/.env` or in `config.py`.
+
+4. **Create systemd service file** `/etc/systemd/system/m3u-recorder.service`:
+
 ```
 [Unit]
 Description=M3U Recorder Bot
@@ -369,57 +370,175 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 ```
-Then:
-```
+
+5. **Enable & start service**
+
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable m3u-recorder
 sudo systemctl start m3u-recorder
 sudo journalctl -u m3u-recorder -f
 ```
 
-### Windows Quick Run
-- Install Python 3.9+ from python.org
-- Set up virtualenv, `pip install -r requirements.txt`
-- Ensure `ffmpeg.exe` is on your PATH
-- Run `python main.py` or create a scheduled Task / NSSM service for persistence
+6. **Monitoring & logs**
+- Use `journalctl` to view logs. Consider adding log rotation for the `flogs/` folder.
+
+**Notes:**
+- For high availability, run multiple instances behind a load balancer and shard tasks by using a single MongoDB and a central job queue (advanced configuration required).
+
+</details>
+
+<details>
+<summary>🔹 Windows Quick Run (with Video Guide section)</summary>
+
+**When to use:** Running on a Windows desktop or Windows server.
+
+**Steps (text)**:
+
+1. **Install Python**
+- Download and install Python 3.9+ from https://python.org (include pip and add to PATH).
+
+2. **Install ffmpeg**
+- Download ffmpeg static build and add the `bin` directory to your PATH environment variable.
+- Test: `ffmpeg -version` in PowerShell or CMD.
+
+3. **Create & activate virtualenv**
+
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1    # PowerShell
+# or
+venv\Scripts\activate.bat     # CMD
+```
+
+4. **Install dependencies**
+
+```powershell
+pip install -r requirements.txt
+```
+
+5. **Configure**
+- Edit `config.py` to add `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_URI`, and `M3U8_FILES_DIRECTORY`.
+
+6. **Place channel JSON files** into `M3U8_FILES_DIRECTORY`.
+
+7. **Run the bot**
+
+```powershell
+python main.py
+```
+
+8. **Persisting the bot**
+- Use Task Scheduler to create a task that starts at boot and runs the command above.
+- Or use a Windows service wrapper like **NSSM** (Non-Sucking Service Manager) to run `python main.py` as a service.
+
+
+**📺 Windows Video Guide (recommended to include in repo README or as a link)**
+- Add a short screencast (3-6 minutes) demonstrating:
+  1. Installing Python and enabling PATH.
+  2. Installing ffmpeg and setting PATH.
+  3. Creating/activating virtualenv.
+  4. Installing `requirements.txt` packages.
+  5. Editing `config.py` with valid credentials.
+  6. Running `python main.py` and verifying `/start` works in Telegram.
+- **Placeholder link**: `https://example.com/windows-deploy-video` (replace with actual video URL or embed in repo).
+
+**Notes:**
+- On Windows, long-running `ffmpeg` jobs might be interrupted by system sleep; disable sleep/hibernate for dedicated machines.
+- If running on a shared desktop, ensure you have sufficient bandwidth and disk space for temporary files.
+
+</details>
 
 ---
 
+<a name="troubleshooting--faq"></a>
 ## ❗ Troubleshooting & FAQ
 
-**FFmpeg not found**
-- Error: `FileNotFoundError: [Errno 2] No such file or directory: 'ffmpeg'`
-- Fix: Install ffmpeg and ensure binaries are in PATH. On Ubuntu: `sudo apt install ffmpeg`.
+<details>
+<summary>FFmpeg not found</summary>
 
-**MongoDB Connection Failure**
-- Check `MONGO_URI`, network access to Atlas cluster, and that credentials are correct.
+**Symptoms:** `FileNotFoundError: [Errno 2] No such file or directory: 'ffmpeg'` or `ffmpeg: command not found`.
 
-**Bot cannot post to group**
-- If uploads fail with `PeerIdInvalid`, the bot may be removed from the group or lacks permission. Re-add bot and give it permission to send messages/documents.
+**Fix:**
+- Install ffmpeg and ensure it is on PATH.
+  - Ubuntu: `sudo apt install ffmpeg`
+  - Debian: `sudo apt-get install ffmpeg`
+  - Windows: download static build and add `C:\path\to\ffmpeg\bin` to PATH.
+- Verify with `ffmpeg -version`.
 
-**Recording fails**
-- Check `flogs/` for FFmpeg logs and use `/flog msg <task_id>` as admin.
+</details>
 
-**Task stuck, cannot cancel**
-- Admin can use `/cancel <task_id>` to force cancel; check `running_jobs` / `pending_states` in-memory state.
+<details>
+<summary>MongoDB issues (connection, network access)</summary>
+
+**Symptoms:** Bot cannot connect to MongoDB, `ServerSelectionTimeoutError`, or operations fail with authentication errors.
+
+**Checklist & fixes:**
+- Double-check `MONGO_URI` for typos and correct username/password.
+- If using **MongoDB Atlas**, ensure your cluster's Network Access (IP whitelist) includes the server IP. For public access you may temporarily set `0.0.0.0/0` — **but this is not recommended** in production unless you have strong authentication and firewall rules.
+- Confirm the database user has the required roles (readWrite) on the database.
+- Try connecting from the server using `mongo` client or `mongosh` to verify connectivity.
+- If using SRV connection string (`mongodb+srv://`), ensure DNS SRV lookup works from the host.
+
+</details>
+
+<details>
+<summary>Bot cannot post to group</summary>
+
+**Symptoms:** Errors such as `PeerIdInvalid`, `ChatWriteForbidden`, or uploads failing with permission errors.
+
+**Fixes:**
+- Ensure the bot was **added to the group**.
+- Give the bot permission to send messages and upload media.
+- If the group is a supergroup, ensure the chat ID in `WORKING_GROUP` is correct (starts with `-100`).
+
+</details>
+
+<details>
+<summary>Recording fails</summary>
+
+**Symptoms:** Recording starts but `ffmpeg` exits with an error; missing segments; file upload fails.
+
+**What to check:**
+- Use admin `/flog msg <task_id>` to inspect the last 50 lines of the ffmpeg log.
+- If the stream requires HTTP headers or referrer, add those headers where the bot supports them.
+- Check network connectivity and stream URL health (try `ffmpeg -i <url>` locally).
+- Check disk space and temp directory permissions.
+
+</details>
+
+<details>
+<summary>Task stuck / cannot cancel</summary>
+
+**Symptoms:** The UI shows a running task but `ffmpeg` process isn't responding to cancel.
+
+**Fixes:**
+- Admin `/cancel <task_id>` should stop it. If not:
+  - Inspect running `ffmpeg` processes and kill the appropriate PID.
+  - Restart the bot process to clear in-memory state.
+- Add health checks and periodic cleanup if tasks frequently become stale.
+
+</details>
 
 ---
 
+<a name="security--notes"></a>
 ## 🔐 Security & Notes
 
-- **Do not** hardcode credentials in the repo. Use `.env` or environment variables on servers.
-- Limit `NUM_WORKERS` based on CPU/bandwidth.
-- Keep `ffmpeg` updated to avoid stream compatibility issues.
-- Consider running the bot behind a reverse proxy or in a sandbox for better isolation.
+- **Do not commit secrets** (`BOT_TOKEN`, `API_HASH`, `MONGO_URI`) into git. Use environment variables or a protected `.env` file stored outside the repo.
+- Limit `NUM_WORKERS` based on actual hardware capabilities to avoid resource exhaustion.
+- Always keep `ffmpeg` updated to the latest stable build for best compatibility.
+- If exposing MongoDB to public networks temporarily (e.g. `0.0.0.0/0`), ensure credentials are strong and prefer restricting IP ranges.
 
 ---
 
+<a name="credits"></a>
 ## 🙌 Credits
 
-- Built using Pyrogram, FFmpeg & MongoDB.
-- Converter script uses simple parsing and slugify logic — adapt it for your M3U flavor.
+- Built using **Pyrogram** for Telegram interaction.
+- Stream recording powered by **FFmpeg** and **ffprobe**.
+- Data persistence via **MongoDB**.
+- `M3U To Json.py` is a small utility included in the repo for converting `.m3u` playlists into bot-friendly JSON lists.
 
 ---
-- Add example `systemd` unit already pasted above into the repo
 
-Tell me which of the three to add and I’ll place them in the canvas as files.
