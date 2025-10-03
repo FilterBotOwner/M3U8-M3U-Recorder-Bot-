@@ -4,15 +4,6 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 
 ---
 
-## 🚀 Quick TL;DR
-
-- Run the bot on a server (Ubuntu recommended) or Windows (works but less stable for 24/7).
-- Prepare channel lists as JSON files (use `M3U To Json.py` to convert `.m3u`/`.m3u8`).
-- Configure `config.py` or supply equivalent environment variables.
-- Use `/rec` to start recordings, `/mytasks` to view them, and admins can manage users/contents.
-
----
-
 ## 🔎 Table of Contents
 
 1. Features
@@ -88,8 +79,8 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 | `VERIFICATION_EXPIRY_SECONDS` | int | How long verification remains valid (seconds). | `4*3600` |
 | `SHORTLINK_URL` | str | Shortlink service base URL used to create verification links. Optional. | `https://vplink.in` |
 | `SHORTLINK_API` | str | API key for shortlink service. Optional. | `xxx-yyy-zzz` |
-| `STATUS_PAGE_SIZE` | int | How many tasks to show per page for `/tasks` pagination. | `5` |
-| `PROGRESS_UPDATE_INTERVAL` | int | Interval (seconds) between progress message edits to reduce API spam. | `10` |
+| `STATUS_PAGE_SIZE` | int | How many tasks to show per page for `/tasks` pagination. | `10` |
+| `PROGRESS_UPDATE_INTERVAL` | int | Interval (seconds) between progress message edits to reduce API spam. | `60` |
 
 **Note on durations:** The values like `PREMIUM_MAX_DURATION_SEC` are seconds in `config.py`. Human examples given above are for readability. When using `/auth` you may pass `30d` or `48h` — see command docs below.
 
@@ -139,8 +130,11 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 - Behavior: Browse loaded JSON channel lists and pick a channel to use in `/rec`.
 
 #### `/search <query>`
-- Usage: `/search disney`
-- Behavior: Search across all channel lists for channels matching the query.
+- 💡 **Usage:**
+• `/search "Disney"` (searches all lists)
+• `/search "Disney India" .l1` (searches list 1)
+• `/search "Disney SD" .l1 .l3` (searches lists 1 and 3)
+- Behavior: Searches across channel lists for channels matching the query based on the specified filters.
 
 #### `/verify`
 - Usage: `/verify`
@@ -179,15 +173,18 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 #### `/add_m3u8` — Add Channel Lists
 There are multiple **modes** supported conceptually — the bot may allow one or more of these depending on how it's configured.
 
-1. **JSON Upload Mode (recommended)**
-   - Admin uploads a `.json` file (created by `M3U To Json.py`) and uses `/add_m3u8` (normally by replying to the uploaded file with the command) to instruct the bot to save that file into `M3U8_FILES_DIRECTORY`.
-   - The bot will validate JSON structure (key: { name, url, Group }).
+💡 Usage:
+***Inline Method***
+1. **File Mode**
+Upload The JSON FILE Containing m3u8 list to telegram `WORKING_GROUP` or `BOT's DM`, reply to the .json file with /add_m3u8.
 
-2. **Inline Mode**
-   - Admin pastes JSON content directly or uses an interactive prompt to enter: `list name` + raw JSON content (less common & more error-prone).
+2. **Individual Link Mode**: 
+/add_m3u8 `"json name"` `"url"` `"channel name"` `"group"` 
+Automatically Creates JSON FIle With Given Details
 
-3. **URL / Import Mode** (if implemented)
-   - Admin provides a public URL to a JSON file and runs `/add_m3u8 <url>` — bot downloads and saves it. (Check if your release supports this.)
+
+***Direct Method***
+Directly upload JSON Folder In The `M3U8_FILES_DIRECTORY`
 
 **Notes & behavior**:
 - After adding, the bot loads the file and the list appears in `channel` and `search` commands.
@@ -205,7 +202,7 @@ There are multiple **modes** supported conceptually — the bot may allow one or
   - `/pull admin` → returns the admin users list saved in DB.
 - Purpose: to backup or inspect data.
 
-#### `/flog [file|msg] <task_id>` — FFmpeg logs
+#### `/flog [file|msg] <task_id>` — FFmpeg logs of specific Task ID
 - Usage:
   - `/flog file <task_id>` → send full log file (if present in `flogs/`).
   - `/flog msg <task_id>` → show last ~50 lines of the log in a message (avoids large messages).
