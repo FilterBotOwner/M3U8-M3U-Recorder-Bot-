@@ -18,10 +18,10 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 ---
 
 <a name="features"></a>
-## 🚀 Features (Expanded)
+## 🚀 Features 
 
 <details>
-<summary>🎥 Recording Features (expanded)</summary>
+<summary>🎥 Recording Features</summary>
 
 - Record from **M3U8** URLs or from a **predefined channel list (JSON)** stored in `M3U8_FILES_DIRECTORY`.
 - Support for both direct `m3u8` stream URLs and HLS playlists.
@@ -49,7 +49,7 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 </details>
 
 <details>
-<summary>🛠 Admin Features (expanded)</summary>
+<summary>🛠 Admin Features </summary>
 
 - Grant/revoke premium access (short-lived) with `/auth` and `/deauth`.
 - Add or remove **admin** accounts which can execute restricted commands.
@@ -64,7 +64,7 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 ---
 
 <a name="configuration-configpy--full-breakdown"></a>
-##📋 Configuration (`config.py`) — full breakdown
+***##📋 Configuration (`config.py`) — full breakdown***
 <details>
 <summary>Configuration</summary>
 > **Tip:** Use environment variables in production. `config.py` loads from the environment when values are present.
