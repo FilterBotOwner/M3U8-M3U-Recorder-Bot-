@@ -62,10 +62,11 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 </details>
 
 ---
-<details>
-<a name="configuration-configpy--full-breakdown"></a>
-## <summary>📋 Configuration (`config.py`) — full breakdown</summary>summary>
 
+<a name="configuration-configpy--full-breakdown"></a>
+##📋 Configuration (`config.py`) — full breakdown
+<details>
+<summary>Configuration</summary>
 > **Tip:** Use environment variables in production. `config.py` loads from the environment when values are present.
 
 | Variable | Type | Purpose / Where used | Example |
