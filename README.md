@@ -67,7 +67,7 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 ## 📋 Configuration (`config.py`) — full breakdown
 <details>
 <summary>Configuration</summary>
-> **Tip:** Use environment variables in production. `config.py` loads from the environment when values are present.
+**Tip:** Use environment variables in production. `config.py` loads from the environment when values are present.
 
 | Variable | Type | Purpose / Where used | Example |
 |---|---:|---|---|
@@ -102,13 +102,14 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 ---
 
 <a name="commands-user--admin--detailed"></a>
-## 💬 Commands — Full Reference, parameters, examples & behavior
+<details>
+<summary>## 💬 Commands — Full Reference, parameters, examples & behavior</summary>
 
 This section contains **detailed** behavior for each user and admin command. It explains optional parameters like `.L#`, `<task_id>`, `[m3u8|log|premium|admin]`, and duration formats.
 
 > **Quick reminder:** When passing arguments that contain spaces (like channel names), wrap them in quotes: `"Channel Name"`.
 
-### 👤 User Commands (detailed)
+### 👤 User Commands 
 
 #### `/start`
 - **Usage:** `/start` or `/start verify_<token>`
@@ -159,7 +160,7 @@ This section contains **detailed** behavior for each user and admin command. It 
 - **Behavior:** If `ENABLE_SHORTLINK` is true, bot generates a verification link (optionally shortened using `SHORTLINK_URL`). When the link is opened and verified by the service, the user is marked verified for `VERIFICATION_EXPIRY_SECONDS`.
 
 
-### 👑 Admin Commands (detailed)
+### 👑 Admin Commands
 
 > Admin commands are restricted to admin users saved in DB or to the `OWNER_ID`.
 
@@ -219,7 +220,7 @@ There are multiple modes the bot supports (depending on code):
 #### `/admin_panel`
 - **Usage:** `/admin_panel`
 - **Behavior:** Opens an inline control panel for admins — reload lists, quick `/pull`, list premium users, manage workers.
-
+</details>
 ---
 
 <a name="m3u---json-converter-in-repo"></a>
