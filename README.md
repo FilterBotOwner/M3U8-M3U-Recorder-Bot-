@@ -324,7 +324,7 @@ python "M3U To Json.py"
 <details>
 <summary>Deployment Guidelines</summary>
   
-> This section contains step-by-step dropdowns for each common deployment flow: cloning from Git, manual setup, Ubuntu production with `systemd`, and Windows. Each step is explicit and contains commands to run.
+> Step-by-step guides for common deployment flows: cloning from Git, manual setup, Ubuntu with `systemd`, and Windows. Each step has clear instructions.
 
 <details>
 <summary>🔹 Clone Repository (Recommended)</summary>
@@ -340,32 +340,28 @@ git clone https://github.com/your/repo.git
 cd repo
 ```
 
-2. **Create and activate a virtual environment (Linux/macOS)**
+2. **Create and activate virtual environment (optional but recommended)**
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate
-```
-
-**Windows (PowerShell)**
-
-```powershell
+source venv/bin/activate   # Linux/macOS
+# or
 python -m venv venv
-venv\Scripts\Activate.ps1
+venv\Scripts\Activate.ps1  # Windows PowerShell
 ```
 
-3. **Install Python dependencies**
+3. **Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
 4. **Prepare configuration**
-- Edit `config.py` to set `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_URI`, `M3U8_FILES_DIRECTORY`, and other values.
-- Or export environment variables before starting if you prefer not to edit files.
+- Edit `config.py` to set `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_URI`, `M3U8_FILES_DIRECTORY`.
+- Or export environment variables.
 
 5. **Add channel lists**
-- Copy your `*.json` channel files to `M3U8_FILES_DIRECTORY` (create the directory if it doesn't exist).
+- Copy `*.json` channel files into `M3U8_FILES_DIRECTORY`.
 
 6. **Start the bot**
 
@@ -374,38 +370,47 @@ python main.py
 ```
 
 7. **Verify**
-- In Telegram, message your bot `/start` and ensure it replies. Check logs for errors.
-
-**Notes:**
-- Keep the terminal open or use a process manager (see Ubuntu / systemd or Windows service suggestions below).
+- Message your bot `/start` in Telegram and check logs.
 
 </details>
 
 <details>
 <summary>🔹 Manual Setup</summary>
 
-**When to use:** You downloaded a ZIP or want to manually install on a desktop.
+**When to use:** You downloaded a ZIP or want to manually install on desktop without virtual environments.
 
 **Steps:**
 
 1. **Download and extract** the repository ZIP file.
-2. Open a terminal in the extracted folder.
-3. **Create & activate a virtualenv** (see Clone steps above).
-4. **Install dependencies**: `pip install -r requirements.txt`.
-5. **Configure** the bot by editing `config.py` (set tokens and DB URI).
-6. **Place JSON lists** into `M3U8_FILES_DIRECTORY`.
-7. **Run:** `python main.py`.
+2. Open terminal in extracted folder.
+3. **Install dependencies**:
 
-**Tips:**
-- Keep a copy of your `config.py` in a safe place; avoid committing it to git.
-- For repeated runs, use a shortcut script (Bash or PowerShell) to start the bot with the environment activated.
+```bash
+pip install -r requirements.txt
+```
+
+4. **Configure**
+- Edit `config.py` with `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_URI`, `M3U8_FILES_DIRECTORY`.
+
+5. **Place channel JSON files** into `M3U8_FILES_DIRECTORY`.
+
+6. **Run the bot**
+
+```bash
+python main.py
+```
+
+7. **Embed video guide**
+- Embed video uploaded in repo here:
+
+```markdown
+![Manual Setup Video](./videos/manual-setup.mp4)
+```
 
 </details>
 
 <details>
 <summary>🔹 Ubuntu Deployment with systemd (Production)</summary>
-
-**When to use:** Running the bot 24/7 on a VPS or cloud instance.
 
 **Steps:**
 
@@ -413,7 +418,7 @@ python main.py
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install python3 python3-venv python3-pip ffmpeg -y
+sudo apt install python3 python3-pip ffmpeg -y
 ```
 
 2. **Clone & setup**
@@ -421,13 +426,11 @@ sudo apt install python3 python3-venv python3-pip ffmpeg -y
 ```bash
 git clone https://github.com/your/repo.git
 cd repo
-python3 -m venv venv
-source venv/bin/activate
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-3. **Create `.env` or edit `config.py`**
-- Place your `API_ID`, `API_HASH`, `BOT_TOKEN`, and `MONGO_URI` in an environment file such as `/home/ubuntu/m3u-recorder/.env` or in `config.py`.
+3. **Configure**
+- Set `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_URI` in `.env` or `config.py`.
 
 4. **Create systemd service file** `/etc/systemd/system/m3u-recorder.service`:
 
@@ -440,7 +443,7 @@ After=network.target
 User=ubuntu
 WorkingDirectory=/home/ubuntu/m3u-recorder
 EnvironmentFile=/home/ubuntu/m3u-recorder/.env
-ExecStart=/home/ubuntu/m3u-recorder/venv/bin/python main.py
+ExecStart=/usr/bin/python3 main.py
 Restart=always
 RestartSec=10
 
@@ -457,77 +460,46 @@ sudo systemctl start m3u-recorder
 sudo journalctl -u m3u-recorder -f
 ```
 
-6. **Monitoring & logs**
-- Use `journalctl` to view logs. Consider adding log rotation for the `flogs/` folder.
+6. **Embed video guide**
 
-**Notes:**
-- For high availability, run multiple instances behind a load balancer and shard tasks by using a single MongoDB and a central job queue (advanced configuration required).
+```markdown
+![Ubuntu Systemd Setup](./videos/ubuntu-systemd.mp4)
+```
 
 </details>
 
 <details>
-<summary>🔹 Windows Quick Run (with Video Guide section)</summary>
+<summary>🔹 Windows Quick Run</summary>
 
-**When to use:** Running on a Windows desktop or Windows server.
+**Steps:**
 
-**Steps (text)**:
-
-1. **Install Python**
-- Download and install Python 3.9+ from https://python.org (include pip and add to PATH).
-
-2. **Install ffmpeg**
-- Download ffmpeg static build and add the `bin` directory to your PATH environment variable.
-- Test: `ffmpeg -version` in PowerShell or CMD.
-
-3. **Create & activate virtualenv**
-
-```powershell
-python -m venv venv
-venv\Scripts\Activate.ps1    # PowerShell
-# or
-venv\Scripts\activate.bat     # CMD
-```
-
-4. **Install dependencies**
+1. **Install Python** and add to PATH.
+2. **Install ffmpeg** and add `bin` to PATH.
+3. **Install dependencies**
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-5. **Configure**
-- Edit `config.py` to add `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_URI`, and `M3U8_FILES_DIRECTORY`.
+4. **Configure**
+- Edit `config.py` with required credentials.
 
-6. **Place channel JSON files** into `M3U8_FILES_DIRECTORY`.
+5. **Place JSON files** into `M3U8_FILES_DIRECTORY`.
 
-7. **Run the bot**
+6. **Run the bot**
 
 ```powershell
 python main.py
 ```
 
-8. **Persisting the bot**
-- Use Task Scheduler to create a task that starts at boot and runs the command above.
-- Or use a Windows service wrapper like **NSSM** (Non-Sucking Service Manager) to run `python main.py` as a service.
+7. **Embed video guide**
 
-
-**📺 Windows Video Guide (recommended to include in repo README or as a link)**
-- Add a short screencast (3-6 minutes) demonstrating:
-  1. Installing Python and enabling PATH.
-  2. Installing ffmpeg and setting PATH.
-  3. Creating/activating virtualenv.
-  4. Installing `requirements.txt` packages.
-  5. Editing `config.py` with valid credentials.
-  6. Running `python main.py` and verifying `/start` works in Telegram.
-- **Placeholder link**: `https://example.com/windows-deploy-video` (replace with actual video URL or embed in repo).
-
-**Notes:**
-- On Windows, long-running `ffmpeg` jobs might be interrupted by system sleep; disable sleep/hibernate for dedicated machines.
-- If running on a shared desktop, ensure you have sufficient bandwidth and disk space for temporary files.
+```markdown
+![Windows Setup Video](./videos/windows-setup.mp4)
+```
 
 </details>
 </details>
-
----
 
 <a name="troubleshooting--faq"></a>
 ## ❗ Troubleshooting & FAQ
