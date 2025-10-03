@@ -293,6 +293,9 @@ There are multiple modes the bot supports (depending on code):
 <a name="m3u---json-converter-in-repo"></a>
 ## 🗂️ M3U → JSON Converter (in repo)
 
+<details>
+<summary>M3U8 To JSON</summary>
+  
 File included: `M3U To Json.py` — an **interactive GUI** helper that reads `.m3u`/`.m3u8` and outputs a `.json` formatted for the bot.
 
 ### What it does
@@ -311,6 +314,8 @@ python "M3U To Json.py"
 ```
 - A file picker opens to choose the `.m3u` file and then a save dialog for `.json`.
 - After conversion, move the `.json` into `M3U8_FILES_DIRECTORY` or add it via `/add_m3u8`.
+
+</details>
 
 ---
 
