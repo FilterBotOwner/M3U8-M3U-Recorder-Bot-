@@ -102,8 +102,8 @@ A **Telegram Bot** to record M3U8 (or M3U) streams, manage recordings, and deliv
 ---
 
 <a name="commands-user--admin--detailed"></a>
-<details>
 ## 💬 Commands — Full Reference, parameters, examples & behavior
+<details>
 <summary>Commands</summary>
 
 This section contains **detailed** behavior for each user and admin command. It explains optional parameters like `.L#`, `<task_id>`, `[m3u8|log|premium|admin]`, and duration formats.
