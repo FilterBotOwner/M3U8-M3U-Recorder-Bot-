@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv() 
 import os
 
 # --------------------------------------------------------------------------------
@@ -80,4 +82,5 @@ STATUS_PAGE_SIZE = 10
 # --------------------------------------------------------------------------------
 # Interval in seconds to update progress messages (recording and uploading).
 # A higher value reduces API spam. Recommended: 20-30 seconds.
+
 PROGRESS_UPDATE_INTERVAL = int(os.environ.get("PROGRESS_UPDATE_INTERVAL", "60"))
