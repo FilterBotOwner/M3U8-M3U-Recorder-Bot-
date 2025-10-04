@@ -381,8 +381,24 @@ python main.py
 
 8. Video Tutorial
 
-[<img src="https://drive.google.com/uc?export=view&id=1QbJlquCTwgVJUymvBj52s9--fXRubWQJ" 
-     width="300">](https://drive.google.com/file/d/1yBVNL7ULqm5h1v47ro1n3_OaeYoPMn1g/preview)
+<a href="https://drive.google.com/file/d/1yBVNL7ULqm5h1v47ro1n3_OaeYoPMn1g/preview" target="_blank" style="display:inline-block; position:relative; text-decoration:none;">
+  <img src="https://drive.google.com/uc?export=view&id=1QbJlquCTwgVJUymvBj52s9--fXRubWQJ" 
+       alt="Video Thumbnail" 
+       style="width:300px; border-radius:15px; transition:transform 0.3s, box-shadow 0.3s; display:block;">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:rgba(0,0,0,0.6); border-radius:50%;">
+      <polygon points="5,3 19,12 5,21 5,3"></polygon>
+    </svg>
+  </div>
+</a>
+
+<style>
+a:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+</style>
+
 
 
 </details>
