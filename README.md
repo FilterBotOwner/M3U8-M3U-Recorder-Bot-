@@ -580,6 +580,7 @@ python main.py
 <details>
 <summary>Security</summary>
   
+- Always Host bot Privately [Hosting Publicly may slowdown bot, bot might crash at larger file uploads]
 - **Do not commit secrets** (`BOT_TOKEN`, `API_HASH`, `MONGO_URI`) into git. Use environment variables or a protected `.env` file stored outside the repo.
 - Limit `NUM_WORKERS` based on actual hardware capabilities to avoid resource exhaustion.
 - Always keep `ffmpeg` updated to the latest stable build for best compatibility.
