@@ -422,7 +422,13 @@ python main.py
 7. **Embed video guide**
 - Watch the manual setup video here:
 
-[![Manual Setup Video](https://drive.google.com/uc?export=view&id=16qkAe8WGSk-9GWKzoBv9cZDfH9y1Wzyu)](https://drive.google.com/file/d/1OGqR2QzDIX5RhnbHfXfIdVrVvmn2HZn8/preview)
+<a href="https://drive.google.com/file/d/1OGqR2QzDIX5RhnbHfXfIdVrVvmn2HZn8/preview" target="_blank">
+  <img src="https://drive.google.com/uc?export=view&id=16qkAe8WGSk-9GWKzoBv9cZDfH9y1Wzyu" 
+       alt="Manual Setup Video"
+       width="300"
+       style="border-radius:15px;">
+</a>
+
 
 
 
