@@ -379,6 +379,12 @@ python main.py
 7. **Verify**
 - Message your bot `/start` in Telegram and check logs.
 
+8. Video Tutorial
+
+[<img src="https://drive.google.com/uc?export=view&id=1QbJlquCTwgVJUymvBj52s9--fXRubWQJ" 
+     width="300">](https://drive.google.com/file/d/1yBVNL7ULqm5h1v47ro1n3_OaeYoPMn1g/preview)
+
+
 </details>
 
 <details>
