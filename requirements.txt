@@ -1,0 +1,16 @@
+# Telegram Framework
+pyrogram
+tgcrypto
+pytz
+
+# For Video Metadata & Thumbnails
+hachoir
+Pillow
+
+# Database Connection
+pymongo
+dnspython
+
+# Asynchronous Operations
+aiofiles
+httpx
