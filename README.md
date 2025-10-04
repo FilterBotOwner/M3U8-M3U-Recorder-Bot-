@@ -411,7 +411,7 @@ python main.py
 - Embed video uploaded in repo here:
 
 ```markdown
-![Manual Setup Video](./videos/manual-setup.mp4)
+[Watch Manual Setup Video](https://drive.google.com/file/d/1OGqR2QzDIX5RhnbHfXfIdVrVvmn2HZn8/view?usp=sharing)
 ```
 
 </details>
