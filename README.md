@@ -254,8 +254,8 @@ There are multiple modes the bot supports (depending on code):
 
 - **Usage examples:**
   - `/pull m3u8` — returns a ZIP containing all JSON channel lists.
-  - `/pull log <task_id>` — returns the FFmpeg log file(s) for specified task.
-  - `/pull premium` — returns a CSV/JSON of premium users and expiry timestamps.
+  - `/pull log` — returns the log file for Current Bot Run.
+  - `/pull premium` — returns a List of premium users and expiry timestamps.
   - `/pull admin` — returns JSON list of admin users.
 - **Purpose:** Backup or inspect stored bot data.
 
