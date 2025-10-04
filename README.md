@@ -336,8 +336,8 @@ python "M3U To Json.py"
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/your/repo.git
-cd repo
+git clone https://github.com/shan0174/M3U8-M3U-Recorder-Bot-.git
+cd M3U8-M3U-Recorder-Bot-
 ```
 
 2. **Create and activate virtual environment (optional but recommended)**
@@ -594,6 +594,7 @@ python main.py
 <details>
 <summary>Credits</summary>
   
+- Built By ***@Shan_0103*** And **@Dora_Toonz** In Telegram.
 - Built using **Pyrogram** for Telegram interaction.
 - Stream recording powered by **FFmpeg** and **ffprobe**.
 - Data persistence via **MongoDB**.
