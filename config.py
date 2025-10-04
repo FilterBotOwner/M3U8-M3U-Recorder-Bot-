@@ -22,7 +22,7 @@ OWNER_ID = int(os.environ.get("OWNER_ID", "7958067256"))
 # ## DATABASE & STORAGE ##
 # --------------------------------------------------------------------------------
 # Connection string for your MongoDB Atlas database
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://shanthosh0103:shan0103@cluster0.a1l08cq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Username:Password@cluster0.a1l08cq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 # Directory to store M3U8 channel list (.json) files
 M3U8_FILES_DIRECTORY = os.environ.get("M3U8_FILES_DIRECTORY", "./m3u8_channels")
@@ -84,3 +84,4 @@ STATUS_PAGE_SIZE = 10
 # A higher value reduces API spam. Recommended: 20-30 seconds.
 
 PROGRESS_UPDATE_INTERVAL = int(os.environ.get("PROGRESS_UPDATE_INTERVAL", "60"))
+
