@@ -353,7 +353,14 @@ venv\Scripts\Activate  # Windows PowerShell
 3. **Install dependencies**
 
 ```bash
-python -m pip install -r requirements.txt
+# Windows
+venv\Scripts\python.exe -m pip install --upgrade pip
+venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# Linux/macOS
+venv/bin/python -m pip install --upgrade pip
+venv/bin/python -m pip install -r requirements.txt
+
 ```
 
 4. **Prepare configuration**
