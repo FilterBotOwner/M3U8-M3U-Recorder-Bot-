@@ -513,9 +513,7 @@ python main.py
 
 7. **Embed video guide**
 
-```markdown
-![Windows Setup Video](./videos/windows-setup.mp4)
-```
+
 
 </details>
 </details>
