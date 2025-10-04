@@ -460,12 +460,6 @@ sudo systemctl start m3u-recorder
 sudo journalctl -u m3u-recorder -f
 ```
 
-6. **Embed video guide**
-
-```markdown
-![Ubuntu Systemd Setup](./videos/ubuntu-systemd.mp4)
-```
-
 </details>
 
 <details>
